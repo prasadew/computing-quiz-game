@@ -1,5 +1,9 @@
 <?php
-// game.php - Main Game Interface
+// game.php - Main Game Interface with sample user data
+$user = [
+    'name' => 'John Doe',
+    'total_score' => 1250
+];
 ?>
 <!DOCTYPE html>
 <html lang="en">
