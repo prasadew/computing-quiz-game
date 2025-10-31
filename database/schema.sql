@@ -1,76 +1,92 @@
 -- Database Schema for History of Computing Quiz Game
--- Create Database
-CREATE DATABASE ComputingQuizGame;
-GO
+-- MySQL Version for WAMP/PHPMyAdmin
 
+-- Create Database
+CREATE DATABASE IF NOT EXISTS ComputingQuizGame;
 USE ComputingQuizGame;
-GO
 
 -- Users Table
-CREATE TABLE users (
-    id INT IDENTITY(1,1) PRIMARY KEY,
-    name NVARCHAR(100) NOT NULL,
-    email NVARCHAR(255) UNIQUE NOT NULL,
-    password_hash NVARCHAR(255) NOT NULL,
+CREATE TABLE IF NOT EXISTS users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
     total_score INT DEFAULT 0,
-    created_at DATETIME DEFAULT GETDATE(),
-    updated_at DATETIME DEFAULT GETDATE()
-);
-GO
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Questions Table
-CREATE TABLE questions (
-    id INT IDENTITY(1,1) PRIMARY KEY,
-    question_text NVARCHAR(MAX) NOT NULL,
-    option_a NVARCHAR(255) NOT NULL,
-    option_b NVARCHAR(255) NOT NULL,
-    option_c NVARCHAR(255) NOT NULL,
-    option_d NVARCHAR(255) NOT NULL,
+CREATE TABLE IF NOT EXISTS questions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    question_text TEXT NOT NULL,
+    option_a VARCHAR(255) NOT NULL,
+    option_b VARCHAR(255) NOT NULL,
+    option_c VARCHAR(255) NOT NULL,
+    option_d VARCHAR(255) NOT NULL,
     correct_option CHAR(1) NOT NULL CHECK (correct_option IN ('A', 'B', 'C', 'D')),
-    difficulty NVARCHAR(20) NOT NULL CHECK (difficulty IN ('Easy', 'Medium', 'Hard')),
-    created_at DATETIME DEFAULT GETDATE()
-);
-GO
+    difficulty VARCHAR(20) NOT NULL CHECK (difficulty IN ('Easy', 'Medium', 'Hard')),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Scores Table
-CREATE TABLE scores (
-    id INT IDENTITY(1,1) PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS scores (
+    id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
     score INT NOT NULL,
-    difficulty NVARCHAR(20),
-    created_at DATETIME DEFAULT GETDATE(),
+    difficulty VARCHAR(20),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-);
-GO
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Lifelines Table (Session-based)
-CREATE TABLE lifelines (
-    id INT IDENTITY(1,1) PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS lifelines (
+    id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
-    session_id NVARCHAR(100) NOT NULL,
+    session_id VARCHAR(100) NOT NULL,
     add_time_remaining INT DEFAULT 3,
     fifty_fifty_remaining INT DEFAULT 3,
     skip_remaining INT DEFAULT 3,
-    banana_used BIT DEFAULT 0,
-    created_at DATETIME DEFAULT GETDATE(),
+    banana_used TINYINT(1) DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-);
-GO
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Game Sessions Table
-CREATE TABLE game_sessions (
-    id INT IDENTITY(1,1) PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS game_sessions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
-    session_id NVARCHAR(100) UNIQUE NOT NULL,
-    difficulty NVARCHAR(20) NOT NULL,
+    session_id VARCHAR(100) UNIQUE NOT NULL,
+    difficulty VARCHAR(20) NOT NULL,
     current_score INT DEFAULT 0,
     questions_answered INT DEFAULT 0,
-    is_active BIT DEFAULT 1,
-    started_at DATETIME DEFAULT GETDATE(),
-    ended_at DATETIME NULL,
+    is_active TINYINT(1) DEFAULT 1,
+    started_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    ended_at TIMESTAMP NULL,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-);
-GO
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Session Questions Table (Track asked questions per session)
+CREATE TABLE IF NOT EXISTS session_questions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    session_id VARCHAR(100) NOT NULL,
+    question_id INT NOT NULL,
+    asked_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (question_id) REFERENCES questions(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Session Answers Table (Track all answers in a session)
+CREATE TABLE IF NOT EXISTS session_answers (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    session_id VARCHAR(100) NOT NULL,
+    question_id INT NOT NULL,
+    selected_option CHAR(1) NOT NULL,
+    is_correct TINYINT(1) NOT NULL,
+    points_earned INT DEFAULT 0,
+    time_taken INT DEFAULT 0,
+    answered_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (question_id) REFERENCES questions(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Insert Sample Questions for Easy Difficulty
 INSERT INTO questions (question_text, option_a, option_b, option_c, option_d, correct_option, difficulty) VALUES
@@ -94,7 +110,7 @@ INSERT INTO questions (question_text, option_a, option_b, option_c, option_d, co
 ('What does ARPANET stand for?', 'Advanced Research Projects Agency Network', 'American Research Projects Agency Network', 'Automated Research Projects Agency Network', 'Applied Research Projects Agency Network', 'A', 'Medium'),
 ('In which decade was the mouse invented?', '1950s', '1960s', '1970s', '1980s', 'B', 'Medium'),
 ('Who developed the first compiler?', 'Grace Hopper', 'Ada Lovelace', 'Alan Turing', 'John von Neumann', 'A', 'Medium'),
-('What was the name of IBM''s chess-playing computer?', 'Watson', 'Deep Blue', 'AlphaGo', 'HAL 9000', 'B', 'Medium'),
+('What was the name of IBM\'s chess-playing computer?', 'Watson', 'Deep Blue', 'AlphaGo', 'HAL 9000', 'B', 'Medium'),
 ('Which company developed the first commercially successful personal computer?', 'Apple', 'IBM', 'Commodore', 'Tandy', 'C', 'Medium'),
 ('What does ASCII stand for?', 'American Standard Code for Information Interchange', 'Automated Standard Code for Information Interchange', 'American System Code for Information Interchange', 'Advanced Standard Code for Information Interchange', 'A', 'Medium');
 
@@ -111,19 +127,17 @@ INSERT INTO questions (question_text, option_a, option_b, option_c, option_d, co
 ('What was the first computer virus called?', 'Creeper', 'Morris Worm', 'Brain', 'Elk Cloner', 'A', 'Hard'),
 ('Which programming language was developed by Bjarne Stroustrup?', 'Java', 'C++', 'Python', 'C#', 'B', 'Hard');
 
-GO
-
 -- Create Indexes for Performance
 CREATE INDEX idx_questions_difficulty ON questions(difficulty);
 CREATE INDEX idx_scores_user_id ON scores(user_id);
-CREATE INDEX idx_scores_created_at ON scores(created_at DESC);
+CREATE INDEX idx_scores_created_at ON scores(created_at);
 CREATE INDEX idx_game_sessions_user ON game_sessions(user_id);
 CREATE INDEX idx_game_sessions_active ON game_sessions(is_active);
-GO
+CREATE INDEX idx_session_questions_session ON session_questions(session_id);
 
 -- Create View for Leaderboard
-CREATE VIEW leaderboard_view AS
-SELECT TOP 10
+CREATE OR REPLACE VIEW leaderboard_view AS
+SELECT 
     u.id,
     u.name,
     u.email,
@@ -133,18 +147,5 @@ SELECT TOP 10
 FROM users u
 LEFT JOIN scores s ON u.id = s.user_id
 GROUP BY u.id, u.name, u.email, u.total_score
-ORDER BY u.total_score DESC;
-GO
-
--- Stored Procedure to Update Total Score
-CREATE PROCEDURE UpdateUserTotalScore
-    @user_id INT,
-    @new_score INT
-AS
-BEGIN
-    UPDATE users
-    SET total_score = total_score + @new_score,
-        updated_at = GETDATE()
-    WHERE id = @user_id;
-END;
-GO
+ORDER BY u.total_score DESC
+LIMIT 10;

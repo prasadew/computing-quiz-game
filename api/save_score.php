@@ -33,7 +33,7 @@ try {
     // End the game session
     $updateQuery = "UPDATE game_sessions 
                     SET is_active = 0, 
-                        ended_at = GETDATE(),
+                        ended_at = NOW(),
                         current_score = ?,
                         questions_answered = ?
                     WHERE session_id = ? AND user_id = ?";
@@ -41,12 +41,15 @@ try {
     
     // Save score to scores table
     $scoreQuery = "INSERT INTO scores (user_id, score, difficulty, created_at)
-                   VALUES (?, ?, ?, GETDATE())";
+                   VALUES (?, ?, ?, NOW())";
     $database->executeQuery($scoreQuery, [$user_id, $score, $difficulty]);
     
-    // Update user's total score using stored procedure
-    $procQuery = "EXEC UpdateUserTotalScore @user_id = ?, @new_score = ?";
-    $database->executeQuery($procQuery, [$user_id, $score]);
+    // Update user's total score
+    $updateUserQuery = "UPDATE users 
+                        SET total_score = total_score + ?,
+                            updated_at = NOW()
+                        WHERE id = ?";
+    $database->executeQuery($updateUserQuery, [$score, $user_id]);
     
     // Get updated total score
     $totalQuery = "SELECT total_score FROM users WHERE id = ?";

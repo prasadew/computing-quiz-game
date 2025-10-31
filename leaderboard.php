@@ -1,47 +1,17 @@
 <?php
-// Sample leaderboard data
-$leaderboard = [
-    [
-        'name' => 'Emma Davis',
-        'total_score' => 3000,
-        'games_played' => 12,
-        'highest_score' => 500
-    ],
-    [
-        'name' => 'Alice Smith',
-        'total_score' => 2100,
-        'games_played' => 8,
-        'highest_score' => 450
-    ],
-    [
-        'name' => 'Bob Wilson',
-        'total_score' => 1800,
-        'games_played' => 6,
-        'highest_score' => 350
-    ],
-    [
-        'name' => 'John Doe',
-        'total_score' => 1250,
-        'games_played' => 5,
-        'highest_score' => 300
-    ],
-    [
-        'name' => 'Mike Johnson',
-        'total_score' => 900,
-        'games_played' => 3,
-        'highest_score' => 400
-    ]
-];
-
-// Sample user rank data
-$userRank = [
-    'user_rank' => 4,
-    'total_score' => 1250,
-    'name' => 'John Doe'
-];
-
-// Mock session for demo
-$_SESSION['user_id'] = 1;
+// At the top, change the query to:
+$query = "SELECT 
+          u.id,
+          u.name,
+          u.total_score,
+          COUNT(s.id) as games_played,
+          MAX(s.score) as highest_score,
+          MAX(s.created_at) as last_played
+          FROM users u
+          LEFT JOIN scores s ON u.id = s.user_id
+          GROUP BY u.id, u.name, u.total_score
+          ORDER BY u.total_score DESC
+          LIMIT 10";
 ?>
 <!DOCTYPE html>
 <html lang="en">
