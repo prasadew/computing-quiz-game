@@ -25,8 +25,8 @@ if (empty($difficulty) || empty($session_id)) {
 try {
     global $database;
     
-    // Get a random question that hasn't been asked in this session
-    $query = "SELECT TOP 1 q.* 
+    // Get a random question that hasn't been asked in this session (MySQL version)
+    $query = "SELECT q.* 
               FROM questions q
               WHERE q.difficulty = ?
               AND q.id NOT IN (
@@ -34,7 +34,8 @@ try {
                   FROM session_questions 
                   WHERE session_id = ?
               )
-              ORDER BY NEWID()";
+              ORDER BY RAND()
+              LIMIT 1";
     
     $stmt = $database->executeQuery($query, [$difficulty, $session_id]);
     $question = $database->fetchOne($stmt);
@@ -49,7 +50,7 @@ try {
     
     // Mark question as asked in this session
     $insertQuery = "INSERT INTO session_questions (session_id, question_id, asked_at) 
-                    VALUES (?, ?, GETDATE())";
+                    VALUES (?, ?, NOW())";
     $database->executeQuery($insertQuery, [$session_id, $question['id']]);
     
     echo json_encode([
