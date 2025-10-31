@@ -1,5 +1,46 @@
 <?php
 // register.php - User Registration
+session_start();
+require_once 'includes/auth.php';
+
+$auth = new Auth();
+$error = '';
+$success = '';
+
+// Redirect if already logged in
+if ($auth->isAuthenticated()) {
+    header('Location: game.php');
+    exit();
+}
+
+// Handle registration form submission
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $name = $_POST['name'] ?? '';
+    $email = $_POST['email'] ?? '';
+    $password = $_POST['password'] ?? '';
+    $confirm_password = $_POST['confirm_password'] ?? '';
+    
+    // Validate password match
+    if ($password !== $confirm_password) {
+        $error = 'Passwords do not match';
+    } else if (strlen($password) < 6) {
+        $error = 'Password must be at least 6 characters long';
+    } else {
+        $result = $auth->register($name, $email, $password);
+        
+        if ($result['success']) {
+            // Set auth token in cookie
+            setcookie('auth_token', $result['token'], time() + 86400, '/', '', false, true);
+            $_SESSION['user_id'] = $result['user']['id'];
+            $_SESSION['user_name'] = $result['user']['name'];
+            
+            header('Location: game.php');
+            exit();
+        } else {
+            $error = $result['message'];
+        }
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">

@@ -1,5 +1,37 @@
 <?php
 // login.php - User Login
+session_start();
+require_once 'includes/auth.php';
+
+$auth = new Auth();
+$error = '';
+$success = '';
+
+// Redirect if already logged in
+if ($auth->isAuthenticated()) {
+    header('Location: game.php');
+    exit();
+}
+
+// Handle login form submission
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $email = $_POST['email'] ?? '';
+    $password = $_POST['password'] ?? '';
+    
+    $result = $auth->login($email, $password);
+    
+    if ($result['success']) {
+        // Set auth token in cookie
+        setcookie('auth_token', $result['token'], time() + 86400, '/', '', false, true);
+        $_SESSION['user_id'] = $result['user']['id'];
+        $_SESSION['user_name'] = $result['user']['name'];
+        
+        header('Location: game.php');
+        exit();
+    } else {
+        $error = $result['message'];
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -74,7 +106,7 @@
                     ⬅️ Back to Home
                 </a>
             </div>
-        </div>
+        </form>
     </div>
 
     <script>
