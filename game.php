@@ -1,9 +1,12 @@
 <?php
-// game.php - Main Game Interface with sample user data
-$user = [
-    'name' => 'John Doe',
-    'total_score' => 1250
-];
+// game.php - Main Game Interface
+session_start();
+require_once 'includes/auth.php';
+
+$auth = new Auth();
+$auth->requireAuth();
+
+$user = $auth->getCurrentUser();
 ?>
 <!DOCTYPE html>
 <html lang="en">
