@@ -41,7 +41,7 @@ $user = $auth->getCurrentUser();
             </h2>
 
             <div class="difficulty-grid">
-                <div class="difficulty-card easy" onclick="startGame('Easy')">
+                <div class="difficulty-card easy">
                     <div style="font-size: 4em; margin-bottom: 15px;">😊</div>
                     <h3 style="color: var(--success-color);">EASY</h3>
                     <p style="color: var(--text-secondary); font-size: 1.1em; margin-top: 15px;">
@@ -50,7 +50,7 @@ $user = $auth->getCurrentUser();
                     </p>
                 </div>
 
-                <div class="difficulty-card medium" onclick="startGame('Medium')">
+                <div class="difficulty-card medium">
                     <div style="font-size: 4em; margin-bottom: 15px;">🤔</div>
                     <h3 style="color: var(--warning-color);">MEDIUM</h3>
                     <p style="color: var(--text-secondary); font-size: 1.1em; margin-top: 15px;">
@@ -59,7 +59,7 @@ $user = $auth->getCurrentUser();
                     </p>
                 </div>
 
-                <div class="difficulty-card hard" onclick="startGame('Hard')">
+                <div class="difficulty-card hard">
                     <div style="font-size: 4em; margin-bottom: 15px;">😤</div>
                     <h3 style="color: var(--danger-color);">HARD</h3>
                     <p style="color: var(--text-secondary); font-size: 1.1em; margin-top: 15px;">
