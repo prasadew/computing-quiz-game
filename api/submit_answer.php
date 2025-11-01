@@ -66,7 +66,7 @@ try {
     
     // Record the answer
     $recordQuery = "INSERT INTO session_answers (session_id, question_id, selected_option, is_correct, points_earned, time_taken, answered_at)
-                    VALUES (?, ?, ?, ?, ?, ?, GETDATE())";
+                    VALUES (?, ?, ?, ?, ?, ?, NOW())";
     $database->executeQuery($recordQuery, [
         $session_id,
         $question_id,

@@ -46,8 +46,8 @@ class Auth {
         $password_hash = password_hash($password, PASSWORD_BCRYPT);
 
         // Insert user
-        $query = "INSERT INTO users (name, email, password_hash, total_score, created_at) 
-                  VALUES (?, ?, ?, 0, GETDATE())";
+    $query = "INSERT INTO users (name, email, password_hash, total_score, created_at) 
+          VALUES (?, ?, ?, 0, NOW())";
         
         try {
             $stmt = $this->db->executeQuery($query, [$name, $email, $password_hash]);

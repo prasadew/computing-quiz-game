@@ -20,6 +20,21 @@ let gameState = {
 
 // Initialize game
 function startGame(difficulty) {
+    console.log('startGame called with difficulty:', difficulty);
+    
+    // Ensure screens exist
+    const difficultyScreen = document.getElementById('difficultyScreen');
+    const gameScreen = document.getElementById('gameScreen');
+    
+    if (!difficultyScreen || !gameScreen) {
+        console.error('Required screens not found:', { 
+            difficultyScreen: !!difficultyScreen, 
+            gameScreen: !!gameScreen 
+        });
+        return;
+    }
+
+    // Initialize game state
     gameState.difficulty = difficulty;
     gameState.sessionId = generateSessionId();
     gameState.currentScore = 0;
@@ -81,20 +96,36 @@ async function initializeSession() {
 // Load question from API
 async function loadQuestion() {
     try {
+        console.log('Loading question for:', {
+            difficulty: gameState.difficulty,
+            sessionId: gameState.sessionId
+        });
+
         const response = await fetch(`api/get_question.php?difficulty=${gameState.difficulty}&session_id=${gameState.sessionId}`);
+        console.log('API Response status:', response.status);
+        
         const data = await response.json();
+        console.log('Question API response:', data);
 
         if (!data.success) {
-            endGame('No more questions available!');
+            console.error('Failed to load question:', data.message);
+            endGame(data.message || 'No more questions available!');
+            return;
+        }
+
+        if (!data.question || !data.question.question_text) {
+            console.error('Invalid question data received:', data);
+            endGame('Error: Invalid question data');
             return;
         }
 
         gameState.currentQuestion = data.question;
+        console.log('Displaying question:', data.question.question_text);
         displayQuestion(data.question);
         startTimer();
     } catch (error) {
         console.error('Error loading question:', error);
-        endGame('Error loading question');
+        endGame('Error loading question: ' + error.message);
     }
 }
 
@@ -393,3 +424,93 @@ function playSound(type) {
 function updateScore() {
     document.getElementById('currentScore').textContent = gameState.currentScore;
 }
+
+// Attach click handlers to difficulty cards as a fallback/robust handler
+// Initialize difficulty card handlers
+function initializeDifficultyCards() {
+    try {
+        // Clear any existing listeners first
+        const cards = document.querySelectorAll('.difficulty-card');
+        cards.forEach(card => {
+            const newCard = card.cloneNode(true);
+            card.parentNode.replaceChild(newCard, card);
+        });
+
+        // Reattach click handlers
+        document.querySelectorAll('.difficulty-card').forEach(card => {
+            const clickHandler = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                // Get difficulty from class
+                let diff = '';
+                if (card.classList.contains('easy')) diff = 'Easy';
+                else if (card.classList.contains('medium')) diff = 'Medium';
+                else if (card.classList.contains('hard')) diff = 'Hard';
+
+                console.log('Difficulty card clicked, starting game with:', diff);
+                
+                // Start the game
+                startGame(diff);
+                
+                // Double-check visibility
+                setTimeout(() => {
+                    const diffScreen = document.getElementById('difficultyScreen');
+                    const gameScreen = document.getElementById('gameScreen');
+                    console.log('Screen visibility check:', {
+                        'difficultyScreen.hidden': diffScreen.classList.contains('hidden'),
+                        'gameScreen.hidden': gameScreen.classList.contains('hidden'),
+                        'difficultyScreen.style.display': window.getComputedStyle(diffScreen).display,
+                        'gameScreen.style.display': window.getComputedStyle(gameScreen).display
+                    });
+                }, 100);
+            };
+
+            // Add the click handler
+            card.addEventListener('click', clickHandler);
+            card.style.cursor = 'pointer';
+            
+            // Make the entire card and its contents clickable
+            card.style.pointerEvents = 'auto';
+            Array.from(card.children).forEach(child => {
+                child.style.pointerEvents = 'auto';
+            });
+        });
+        
+        console.log('Difficulty listeners initialized:', document.querySelectorAll('.difficulty-card').length);
+    } catch (err) {
+        console.error('Error initializing difficulty cards:', err);
+    }
+}
+
+// Initialize on DOMContentLoaded and after any dynamic updates
+document.addEventListener('DOMContentLoaded', initializeDifficultyCards);
+
+// Global debug click logger to help identify overlay or blocking elements
+// (temporary - remove after debugging)
+document.addEventListener('click', (e) => {
+    try {
+        console.log('Global click event target:', e.target);
+        const topEl = document.elementFromPoint(e.clientX, e.clientY);
+        console.log('Top element at click position (elementFromPoint):', topEl);
+
+        // If the clicked element is not a difficulty-card or a child, log ancestors
+        const difficultyCard = e.target.closest ? e.target.closest('.difficulty-card') : null;
+        if (!difficultyCard) {
+            console.warn('Clicked target is NOT inside a .difficulty-card');
+        } else {
+            console.log('Clicked inside difficulty-card:', difficultyCard.className);
+        }
+    } catch (err) {
+        console.error('Error in global click logger:', err);
+    }
+});
+
+document.addEventListener('pointerdown', (e) => {
+    // also log pointerdown which fires earlier than click
+    try {
+        console.log('Pointerdown at', e.clientX, e.clientY, 'target:', e.target);
+    } catch (err) {
+        console.error('Error logging pointerdown:', err);
+    }
+});

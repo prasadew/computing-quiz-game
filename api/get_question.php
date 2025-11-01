@@ -26,7 +26,10 @@ try {
     global $database;
     
     // Get a random question that hasn't been asked in this session
-    $query = "SELECT TOP 1 q.* 
+    // Convert difficulty to proper case to match ENUM values
+    $difficulty = ucfirst(strtolower($difficulty));
+    
+    $query = "SELECT q.* 
               FROM questions q
               WHERE q.difficulty = ?
               AND q.id NOT IN (
@@ -34,10 +37,18 @@ try {
                   FROM session_questions 
                   WHERE session_id = ?
               )
-              ORDER BY NEWID()";
+              ORDER BY RAND()
+              LIMIT 1";
     
+    error_log("Executing query for difficulty: " . $difficulty . ", session: " . $session_id);
     $stmt = $database->executeQuery($query, [$difficulty, $session_id]);
     $question = $database->fetchOne($stmt);
+    
+    if (!$question) {
+        error_log("No question found for difficulty: " . $difficulty);
+    } else {
+        error_log("Found question ID: " . $question['id']);
+    }
     
     if (!$question) {
         echo json_encode([
@@ -49,7 +60,7 @@ try {
     
     // Mark question as asked in this session
     $insertQuery = "INSERT INTO session_questions (session_id, question_id, asked_at) 
-                    VALUES (?, ?, GETDATE())";
+                    VALUES (?, ?, NOW())";
     $database->executeQuery($insertQuery, [$session_id, $question['id']]);
     
     echo json_encode([

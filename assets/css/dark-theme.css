@@ -132,6 +132,12 @@ body::before {
     background-clip: padding-box;
     position: relative;
     transition: all 0.3s ease;
+    pointer-events: none; /* Let clicks pass through the card container */
+}
+
+/* But allow clicks on card contents */
+.card > * {
+    pointer-events: auto;
 }
 
 .card::before {
@@ -150,6 +156,14 @@ body::before {
     mask-composite: exclude;
     opacity: 0;
     transition: opacity 0.3s ease;
+}
+
+/* Ensure decorative pseudo-elements don't block mouse events */
+.card::before,
+.game-header::before,
+.btn::before,
+.option-btn::before {
+    pointer-events: none;
 }
 
 .card:hover::before {
@@ -531,11 +545,22 @@ body::before {
 }
 
 /* Difficulty Selection */
+#difficultyScreen {
+    pointer-events: none !important;
+}
+
+#difficultyScreen h2 {
+    pointer-events: none;
+}
+
 .difficulty-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 30px;
     margin: 40px 0;
+    position: relative;
+    z-index: 1000;
+    pointer-events: none;
 }
 
 .difficulty-card {
@@ -546,6 +571,19 @@ body::before {
     cursor: pointer;
     transition: all 0.3s ease;
     border: 4px solid transparent;
+    position: relative;
+    z-index: 1002;
+    /* Ensure the entire card is clickable */
+    display: block;
+    width: 100%;
+    height: 100%;
+    /* Make ONLY the difficulty cards clickable */
+    pointer-events: auto !important;
+}
+
+/* Ensure all child elements of difficulty cards don't interfere with clicks */
+.difficulty-card > * {
+    pointer-events: none;
 }
 
 .difficulty-card:hover {
@@ -678,7 +716,7 @@ body::before {
 }
 
 .hidden {
-    display: none;
+    display: none !important;
 }
 
 .fade-in {

@@ -18,7 +18,7 @@ $input = json_decode(file_get_contents('php://input'), true);
 
 $session_id = $input['session_id'] ?? '';
 $score = $input['score'] ?? 0;
-$difficulty = $input['difficulty'] ?? '';
+$difficulty = ucfirst(strtolower($input['difficulty'] ?? ''));
 $questions_answered = $input['questions_answered'] ?? 0;
 
 if (empty($session_id)) {
@@ -33,7 +33,7 @@ try {
     // End the game session
     $updateQuery = "UPDATE game_sessions 
                     SET is_active = 0, 
-                        ended_at = GETDATE(),
+                        ended_at = NOW(),
                         current_score = ?,
                         questions_answered = ?
                     WHERE session_id = ? AND user_id = ?";
@@ -41,11 +41,11 @@ try {
     
     // Save score to scores table
     $scoreQuery = "INSERT INTO scores (user_id, score, difficulty, created_at)
-                   VALUES (?, ?, ?, GETDATE())";
+                   VALUES (?, ?, ?, NOW())";
     $database->executeQuery($scoreQuery, [$user_id, $score, $difficulty]);
     
     // Update user's total score using stored procedure
-    $procQuery = "EXEC UpdateUserTotalScore @user_id = ?, @new_score = ?";
+    $procQuery = "CALL UpdateUserTotalScore(?, ?)";
     $database->executeQuery($procQuery, [$user_id, $score]);
     
     // Get updated total score
