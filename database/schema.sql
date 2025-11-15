@@ -86,6 +86,23 @@ CREATE TABLE session_questions (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ==========================
+-- SESSION ANSWERS TABLE
+-- ==========================
+CREATE TABLE session_answers (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    session_id VARCHAR(191) NOT NULL,
+    question_id INT NOT NULL,
+    selected_option CHAR(1) NOT NULL,
+    is_correct BOOLEAN DEFAULT 0,
+    points_earned INT DEFAULT 0,
+    time_taken INT NOT NULL,
+    answered_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (session_id) REFERENCES game_sessions(session_id) ON DELETE CASCADE,
+    FOREIGN KEY (question_id) REFERENCES questions(id) ON DELETE CASCADE,
+    INDEX idx_session_answers (session_id, question_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ==========================
 -- INSERT SAMPLE QUESTIONS (EASY)
 -- ==========================
 INSERT INTO questions (question_text, option_a, option_b, option_c, option_d, correct_option, difficulty) VALUES
