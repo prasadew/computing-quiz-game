@@ -18,6 +18,34 @@ let gameState = {
     isAnswering: false
 };
 
+// Fetch current lifeline status from server
+async function fetchLifelines() {
+    try {
+        const response = await fetch(`api/get_lifelines.php?session_id=${gameState.sessionId}`);
+        const data = await response.json();
+        
+        if (data.success) {
+            gameState.lifelines = {
+                addTime: data.lifelines.add_time_remaining,
+                fiftyFifty: data.lifelines.fifty_fifty_remaining,
+                skip: data.lifelines.skip_remaining
+            };
+            
+            // Update UI
+            document.getElementById('addTimeCount').textContent = data.lifelines.add_time_remaining;
+            document.getElementById('fiftyFiftyCount').textContent = data.lifelines.fifty_fifty_remaining;
+            document.getElementById('skipCount').textContent = data.lifelines.skip_remaining;
+            
+            // Update button states
+            document.getElementById('addTimeBtn').disabled = data.lifelines.add_time_remaining === 0;
+            document.getElementById('fiftyFiftyBtn').disabled = data.lifelines.fifty_fifty_remaining === 0;
+            document.getElementById('skipBtn').disabled = data.lifelines.skip_remaining === 0;
+        }
+    } catch (error) {
+        console.error('Error fetching lifelines:', error);
+    }
+}
+
 // Initialize game
 function startGame(difficulty) {
     console.log('startGame called with difficulty:', difficulty);
@@ -356,6 +384,16 @@ async function updateLifelineOnServer(type) {
 async function endGame(reason) {
     clearInterval(gameState.timerInterval);
 
+    // Check if returning from successful banana game
+    const bananaGameSuccess = sessionStorage.getItem('bananaGameSuccess');
+    if (bananaGameSuccess) {
+        sessionStorage.removeItem('bananaGameSuccess');
+        // Reset game state for continuation
+        await fetchLifelines();
+        loadQuestion();
+        return;
+    }
+
     // Save final score
     await saveFinalScore();
 
@@ -408,7 +446,26 @@ async function saveFinalScore() {
 
 // Play Banana Game
 function playBananaGame() {
+    gameState.bananaGameUsed = true;
     window.location.href = 'banana-game.php?session_id=' + gameState.sessionId;
+}
+
+// Restore lifeline after banana game success
+function restoreLifeline() {
+    // Find first empty lifeline to restore
+    if (gameState.lifelines.addTime === 0) {
+        gameState.lifelines.addTime = 1;
+        document.getElementById('addTimeBtn').disabled = false;
+        document.getElementById('addTimeCount').textContent = '1';
+    } else if (gameState.lifelines.fiftyFifty === 0) {
+        gameState.lifelines.fiftyFifty = 1;
+        document.getElementById('fiftyFiftyBtn').disabled = false;
+        document.getElementById('fiftyFiftyCount').textContent = '1';
+    } else if (gameState.lifelines.skip === 0) {
+        gameState.lifelines.skip = 1;
+        document.getElementById('skipBtn').disabled = false;
+        document.getElementById('skipCount').textContent = '1';
+    }
 }
 
 // Play sound effect

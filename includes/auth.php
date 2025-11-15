@@ -184,5 +184,22 @@ class Auth {
         $payload = JWT::verify($token);
         return $payload ? $payload['user_id'] : null;
     }
+
+    // Logout user
+    public function logout() {
+        // Clear the auth token cookie if it exists
+        if (isset($_COOKIE['auth_token'])) {
+            setcookie('auth_token', '', time() - 3600, '/');
+            unset($_COOKIE['auth_token']);
+        }
+
+        // Clear session variables
+        $_SESSION = array();
+        
+        return [
+            'success' => true,
+            'message' => 'Logged out successfully'
+        ];
+    }
 }
 ?>
