@@ -25,25 +25,27 @@ if (empty($session_id)) {
 try {
     global $database;
     
-    // Check if banana game was already used
+    // Check how many times banana game has been used for this session (allow up to 2)
     $checkQuery = "SELECT banana_used FROM lifelines WHERE session_id = ?";
     $stmt = $database->executeQuery($checkQuery, [$session_id]);
     $lifeline = $database->fetchOne($stmt);
-    
+
     if (!$lifeline) {
         echo json_encode(['success' => false, 'message' => 'Session not found']);
         exit();
     }
-    
-    if ($lifeline['banana_used'] == 1) {
-        echo json_encode(['success' => false, 'message' => 'Banana game already used']);
+
+    // banana_used column originally stored as BOOLEAN; treat it as an integer counter here
+    $uses = intval($lifeline['banana_used']);
+    if ($uses >= 2) {
+        echo json_encode(['success' => false, 'message' => 'Banana game already used maximum times']);
         exit();
     }
-    
-    // Award one lifeline (add to skip)
+
+    // Award one lifeline (add to skip) and increment banana_used counter
     $updateQuery = "UPDATE lifelines 
                     SET skip_remaining = skip_remaining + 1,
-                        banana_used = 1
+                        banana_used = banana_used + 1
                     WHERE session_id = ?";
     $database->executeQuery($updateQuery, [$session_id]);
     

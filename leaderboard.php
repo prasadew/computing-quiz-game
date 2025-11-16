@@ -1,47 +1,51 @@
 <?php
-// Sample leaderboard data
-$leaderboard = [
-    [
-        'name' => 'Emma Davis',
-        'total_score' => 3000,
-        'games_played' => 12,
-        'highest_score' => 500
-    ],
-    [
-        'name' => 'Alice Smith',
-        'total_score' => 2100,
-        'games_played' => 8,
-        'highest_score' => 450
-    ],
-    [
-        'name' => 'Bob Wilson',
-        'total_score' => 1800,
-        'games_played' => 6,
-        'highest_score' => 350
-    ],
-    [
-        'name' => 'John Doe',
-        'total_score' => 1250,
-        'games_played' => 5,
-        'highest_score' => 300
-    ],
-    [
-        'name' => 'Mike Johnson',
-        'total_score' => 900,
-        'games_played' => 3,
-        'highest_score' => 400
-    ]
-];
+// Leaderboard - load real data from the database
+session_start();
+require_once __DIR__ . '/config/database.php';
+require_once __DIR__ . '/includes/auth.php';
 
-// Sample user rank data
-$userRank = [
-    'user_rank' => 4,
-    'total_score' => 1250,
-    'name' => 'John Doe'
-];
+$auth = new Auth();
+$isAuthenticated = $auth->isAuthenticated();
 
-// Mock session for demo
-$_SESSION['user_id'] = 1;
+// Fetch top players (top 10) with games played and highest score
+try {
+    $query = "SELECT u.id, u.name, u.total_score, 
+                     COUNT(s.id) AS games_played, 
+                     IFNULL(MAX(s.score), 0) AS highest_score
+              FROM users u
+              LEFT JOIN scores s ON s.user_id = u.id
+              GROUP BY u.id, u.name, u.total_score
+              ORDER BY u.total_score DESC
+              LIMIT 10";
+
+    $stmt = $database->executeQuery($query);
+    $leaderboard = $database->fetchAll($stmt);
+} catch (Exception $e) {
+    // On error, fall back to empty leaderboard and log the error
+    error_log('Leaderboard query failed: ' . $e->getMessage());
+    $leaderboard = [];
+}
+
+// If user is authenticated, get their rank and total
+$userRank = null;
+if ($auth->isAuthenticated()) {
+    $user_id = $auth->getUserId();
+    if ($user_id) {
+        try {
+            $rankQuery = "SELECT 
+                          (SELECT COUNT(*) FROM users u2 WHERE u2.total_score > u1.total_score) + 1 as user_rank,
+                          u1.total_score,
+                          u1.name
+                          FROM users u1
+                          WHERE u1.id = ?";
+            $rankStmt = $database->executeQuery($rankQuery, [$user_id]);
+            $userRank = $database->fetchOne($rankStmt);
+        } catch (Exception $e) {
+            error_log('User rank query failed: ' . $e->getMessage());
+            $userRank = null;
+        }
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -62,10 +66,10 @@ $_SESSION['user_id'] = 1;
 
         <div class="card fade-in">
             <div style="text-align: center; margin-bottom: 30px;">
-                <a href="<?php echo isset($_SESSION['user_id']) ? 'game.php' : 'index.php'; ?>" 
+                <a href="<?php echo $isAuthenticated ? 'game.php' : 'index.php'; ?>" 
                    class="btn btn-primary" 
                    style="text-decoration: none; display: inline-block;">
-                    <?php echo isset($_SESSION['user_id']) ? '🎮 Back to Game' : '🏠 Back to Home'; ?>
+                    <?php echo $isAuthenticated ? '🎮 Back to Game' : '🏠 Back to Home'; ?>
                 </a>
             </div>
 
@@ -122,36 +126,21 @@ $_SESSION['user_id'] = 1;
                 </table>
             <?php endif; ?>
 
-            <?php if (isset($_SESSION['user_id'])): ?>
+            <?php if ($isAuthenticated && $userRank): ?>
                 <div style="margin-top: 40px; padding-top: 30px; border-top: 3px solid var(--accent-purple); text-align: center;">
-                    <?php
-                    // Get current user's rank
-                    $user_id = $_SESSION['user_id'];
-                    $rankQuery = "SELECT 
-                                  (SELECT COUNT(*) FROM users u2 WHERE u2.total_score > u1.total_score) + 1 as user_rank,
-                                  u1.total_score,
-                                  u1.name
-                                  FROM users u1
-                                  WHERE u1.id = ?";
-                    $rankStmt = $database->executeQuery($rankQuery, [$user_id]);
-                    $userRank = $database->fetchOne($rankStmt);
-                    ?>
-                    
-                    <?php if ($userRank): ?>
-                        <div style="background: linear-gradient(135deg, var(--accent-purple), var(--accent-pink)); padding: 25px; border-radius: 15px;">
-                            <h3 style="font-family: 'Bangers', cursive; font-size: 2em; margin-bottom: 15px;">
-                                Your Ranking
-                            </h3>
-                            <p style="font-size: 1.5em; margin: 10px 0;">
-                                Rank: <strong style="color: var(--glow-color); text-shadow: 0 0 10px var(--glow-color);">
-                                    #<?php echo $userRank['user_rank']; ?>
-                                </strong>
-                            </p>
-                            <p style="font-size: 1.3em;">
-                                Total Score: <strong><?php echo number_format($userRank['total_score']); ?></strong>
-                            </p>
-                        </div>
-                    <?php endif; ?>
+                    <div style="background: linear-gradient(135deg, var(--accent-purple), var(--accent-pink)); padding: 25px; border-radius: 15px;">
+                        <h3 style="font-family: 'Bangers', cursive; font-size: 2em; margin-bottom: 15px;">
+                            Your Ranking
+                        </h3>
+                        <p style="font-size: 1.5em; margin: 10px 0;">
+                            Rank: <strong style="color: var(--glow-color); text-shadow: 0 0 10px var(--glow-color);">
+                                #<?php echo htmlspecialchars($userRank['user_rank']); ?>
+                            </strong>
+                        </p>
+                        <p style="font-size: 1.3em;">
+                            Total Score: <strong><?php echo number_format($userRank['total_score']); ?></strong>
+                        </p>
+                    </div>
                 </div>
             <?php endif; ?>
         </div>

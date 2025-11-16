@@ -24,8 +24,8 @@ if (empty($session_id)) {
 try {
     global $database;
     
-    // Get current lifeline counts
-    $query = "SELECT add_time_remaining, fifty_fifty_remaining, skip_remaining 
+    // Get current lifeline counts (including banana usage counter)
+    $query = "SELECT add_time_remaining, fifty_fifty_remaining, skip_remaining, banana_used 
               FROM lifelines 
               WHERE session_id = ?";
     $stmt = $database->executeQuery($query, [$session_id]);
