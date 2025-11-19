@@ -24,7 +24,19 @@ if (empty($difficulty) || empty($session_id)) {
 
 try {
     global $database;
-    
+
+    // Ensure session exists before selecting questions
+    $sessionCheck = "SELECT id FROM game_sessions WHERE session_id = ?";
+    $sstmt = $database->executeQuery($sessionCheck, [$session_id]);
+    $sessionRow = $database->fetchOne($sstmt);
+    if (!$sessionRow) {
+        echo json_encode([
+            'success' => false,
+            'message' => 'Session not initialized'
+        ]);
+        exit();
+    }
+
     // Get a random question that hasn't been asked in this session
     // Convert difficulty to proper case to match ENUM values
     $difficulty = ucfirst(strtolower($difficulty));

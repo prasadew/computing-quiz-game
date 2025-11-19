@@ -56,7 +56,7 @@ async function fetchLifelines() {
 }
 
 // Initialize game
-function startGame(difficulty) {
+async function startGame(difficulty) {
     console.log('startGame called with difficulty:', difficulty);
     
     // Ensure screens exist
@@ -95,10 +95,15 @@ function startGame(difficulty) {
     document.getElementById('difficultyScreen').classList.add('hidden');
     document.getElementById('gameScreen').classList.remove('hidden');
 
-    // Initialize session on server
-    initializeSession();
+    // Initialize session on server and wait for completion before loading questions
+    const initSuccess = await initializeSession();
+    if (!initSuccess) {
+        console.error('Failed to initialize session on server. Aborting game start.');
+        endGame('Error initializing session');
+        return;
+    }
 
-    // Load first question
+    // Load first question only after session init succeeded
     loadQuestion();
 }
 
@@ -125,6 +130,7 @@ async function initializeSession() {
         const data = await response.json();
         if (!data.success) {
             console.error('Failed to initialize session:', data.message);
+            return false;
         } else {
             // Fetch lifelines for the newly created session so UI reflects banana usage and counts
             try {
@@ -132,9 +138,11 @@ async function initializeSession() {
             } catch (err) {
                 console.warn('Could not fetch lifelines after session init:', err);
             }
+            return true;
         }
     } catch (error) {
         console.error('Error initializing session:', error);
+        return false;
     }
 }
 

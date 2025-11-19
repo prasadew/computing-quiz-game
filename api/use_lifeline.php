@@ -41,19 +41,38 @@ try {
     
     $column = $columnMap[$lifeline_type];
     
-    // Decrease lifeline count
+    // Decrease lifeline count (only if > 0)
     $query = "UPDATE lifelines 
               SET $column = $column - 1 
               WHERE session_id = ? AND $column > 0";
-    $database->executeQuery($query, [$session_id]);
-    
+    $stmt = $database->executeQuery($query, [$session_id]);
+
+    // If no rows updated, lifeline was not available
+    $rowsAffected = $stmt->rowCount();
+    if ($rowsAffected === 0) {
+        // Return explicit error that lifeline is not available
+        // Still fetch current counts to include in response
+        $selectQuery = "SELECT add_time_remaining, fifty_fifty_remaining, skip_remaining 
+                        FROM lifelines 
+                        WHERE session_id = ?";
+        $sstmt = $database->executeQuery($selectQuery, [$session_id]);
+        $lifelines = $database->fetchOne($sstmt);
+
+        echo json_encode([
+            'success' => false,
+            'message' => 'No lifeline remaining',
+            'remaining_lifelines' => $lifelines
+        ]);
+        exit();
+    }
+
     // Get remaining lifelines
     $selectQuery = "SELECT add_time_remaining, fifty_fifty_remaining, skip_remaining 
                     FROM lifelines 
                     WHERE session_id = ?";
-    $stmt = $database->executeQuery($selectQuery, [$session_id]);
-    $lifelines = $database->fetchOne($stmt);
-    
+    $stmt2 = $database->executeQuery($selectQuery, [$session_id]);
+    $lifelines = $database->fetchOne($stmt2);
+
     echo json_encode([
         'success' => true,
         'message' => 'Lifeline used successfully',
