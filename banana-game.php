@@ -109,6 +109,7 @@ if (empty($session_id)) {
                         headers: {
                             'Content-Type': 'application/json'
                         },
+                        credentials: 'same-origin',
                         body: JSON.stringify({
                             session_id: '<?php echo htmlspecialchars($session_id); ?>'
                         })

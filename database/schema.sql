@@ -51,7 +51,7 @@ CREATE TABLE lifelines (
     add_time_remaining INT DEFAULT 3,
     fifty_fifty_remaining INT DEFAULT 3,
     skip_remaining INT DEFAULT 3,
-    banana_used BOOLEAN DEFAULT 0,
+    banana_used INT DEFAULT 0,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

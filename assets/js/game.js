@@ -14,14 +14,21 @@ let gameState = {
         fiftyFifty: 3,
         skip: 3
     },
-    bananaGameUsed: false,
+    // track how many times banana has been used (server-side counter reflected here)
+    bananaUses: 0,
     isAnswering: false
 };
+
+// When true, the final score has not yet been saved to the server and
+// the session remains open so the player can attempt the banana game.
+gameState.pendingSave = false;
 
 // Fetch current lifeline status from server
 async function fetchLifelines() {
     try {
-        const response = await fetch(`api/get_lifelines.php?session_id=${gameState.sessionId}`);
+        const response = await fetch(`api/get_lifelines.php?session_id=${gameState.sessionId}`, {
+            credentials: 'same-origin'
+        });
         const data = await response.json();
         
         if (data.success) {
@@ -30,6 +37,8 @@ async function fetchLifelines() {
                 fiftyFifty: data.lifelines.fifty_fifty_remaining,
                 skip: data.lifelines.skip_remaining
             };
+            // banana usage counter from server (may be 0,1 or 2)
+            gameState.bananaUses = parseInt(data.lifelines.banana_used || 0, 10);
             
             // Update UI
             document.getElementById('addTimeCount').textContent = data.lifelines.add_time_remaining;
@@ -67,7 +76,7 @@ function startGame(difficulty) {
     gameState.sessionId = generateSessionId();
     gameState.currentScore = 0;
     gameState.questionsAnswered = 0;
-    gameState.bananaGameUsed = false;
+    // bananaUses is tracked from server; no local boolean needed here
     
     // Set time based on difficulty
     switch(difficulty) {
@@ -106,6 +115,7 @@ async function initializeSession() {
             headers: {
                 'Content-Type': 'application/json',
             },
+            credentials: 'same-origin',
             body: JSON.stringify({
                 session_id: gameState.sessionId,
                 difficulty: gameState.difficulty
@@ -115,6 +125,13 @@ async function initializeSession() {
         const data = await response.json();
         if (!data.success) {
             console.error('Failed to initialize session:', data.message);
+        } else {
+            // Fetch lifelines for the newly created session so UI reflects banana usage and counts
+            try {
+                await fetchLifelines();
+            } catch (err) {
+                console.warn('Could not fetch lifelines after session init:', err);
+            }
         }
     } catch (error) {
         console.error('Error initializing session:', error);
@@ -129,7 +146,9 @@ async function loadQuestion() {
             sessionId: gameState.sessionId
         });
 
-        const response = await fetch(`api/get_question.php?difficulty=${gameState.difficulty}&session_id=${gameState.sessionId}`);
+        const response = await fetch(`api/get_question.php?difficulty=${gameState.difficulty}&session_id=${gameState.sessionId}`, {
+            credentials: 'same-origin'
+        });
         console.log('API Response status:', response.status);
         
         const data = await response.json();
@@ -244,6 +263,7 @@ async function selectAnswer(selectedOption) {
             headers: {
                 'Content-Type': 'application/json',
             },
+            credentials: 'same-origin',
             body: JSON.stringify({
                 session_id: gameState.sessionId,
                 question_id: gameState.currentQuestion.id,
@@ -370,6 +390,7 @@ async function updateLifelineOnServer(type) {
             headers: {
                 'Content-Type': 'application/json',
             },
+            credentials: 'same-origin',
             body: JSON.stringify({
                 session_id: gameState.sessionId,
                 lifeline_type: type
@@ -388,14 +409,19 @@ async function endGame(reason) {
     const bananaGameSuccess = sessionStorage.getItem('bananaGameSuccess');
     if (bananaGameSuccess) {
         sessionStorage.removeItem('bananaGameSuccess');
-        // Reset game state for continuation
+        // Reset game state for continuation: fetch lifelines and consume awarded skip if present
         await fetchLifelines();
-        loadQuestion();
+        if (gameState.lifelines.skip > 0) {
+            await useLifeline('skip');
+        } else {
+            loadQuestion();
+        }
         return;
     }
 
-    // Save final score
-    await saveFinalScore();
+    // Defer saving final score so player can play Banana Game and resume
+    // The score will be saved only when the player chooses to finish (Play Again / View Leaderboard)
+    gameState.pendingSave = true;
 
     // Update modal
     document.getElementById('gameOverTitle').innerHTML = reason.includes('Wrong') || reason.includes('Time') 
@@ -404,18 +430,47 @@ async function endGame(reason) {
     document.getElementById('finalScore').textContent = gameState.currentScore;
     document.getElementById('questionsAnswered').textContent = gameState.questionsAnswered;
 
-    // Show banana game option if all lifelines used and not used before
-    const allLifelinesUsed = gameState.lifelines.addTime === 0 && 
-                             gameState.lifelines.fiftyFifty === 0 && 
-                             gameState.lifelines.skip === 0;
-    
-    if (allLifelinesUsed && !gameState.bananaGameUsed) {
+    // Show banana game option if banana has been used fewer than 2 times in this session
+    // (allow playing banana even if other lifelines remain)
+    if (gameState.bananaUses < 2) {
         document.getElementById('bananaGameOption').classList.remove('hidden');
+    } else {
+        document.getElementById('bananaGameOption').classList.add('hidden');
     }
 
     // Show modal
     document.getElementById('gameOverModal').classList.add('active');
     playSound('gameOver');
+
+    // Attach handlers to modal action buttons so score is saved before navigation
+    try {
+        const playAgainBtn = Array.from(document.querySelectorAll('button')).find(b => b.textContent && b.textContent.includes('Play Again'));
+        const leaderboardBtn = Array.from(document.querySelectorAll('button')).find(b => b.textContent && b.textContent.includes('View Leaderboard'));
+
+        if (playAgainBtn) {
+            // Remove existing inline handler if any and attach our handler
+            playAgainBtn.onclick = async (e) => {
+                // Save score, then reload to start a fresh game
+                if (gameState.pendingSave) {
+                    await saveFinalScore();
+                    gameState.pendingSave = false;
+                }
+                location.reload();
+            };
+        }
+
+        if (leaderboardBtn) {
+            leaderboardBtn.onclick = async (e) => {
+                if (gameState.pendingSave) {
+                    await saveFinalScore();
+                    gameState.pendingSave = false;
+                }
+                window.location.href = 'leaderboard.php';
+            };
+        }
+    } catch (err) {
+        console.error('Error attaching gameOver modal handlers:', err);
+    }
 }
 
 // Save final score to database
@@ -426,6 +481,7 @@ async function saveFinalScore() {
             headers: {
                 'Content-Type': 'application/json',
             },
+            credentials: 'same-origin',
             body: JSON.stringify({
                 session_id: gameState.sessionId,
                 score: gameState.currentScore,
@@ -446,9 +502,75 @@ async function saveFinalScore() {
 
 // Play Banana Game
 function playBananaGame() {
-    gameState.bananaGameUsed = true;
+    // Preserve minimal game state so we can resume after the banana game
+    try {
+        sessionStorage.setItem('bananaPreviousSessionId', gameState.sessionId);
+        sessionStorage.setItem('bananaPreviousDifficulty', gameState.difficulty);
+        sessionStorage.setItem('bananaPrevScore', String(gameState.currentScore));
+        sessionStorage.setItem('bananaPrevQuestionsAnswered', String(gameState.questionsAnswered));
+    } catch (err) {
+        console.warn('Could not persist banana previous state:', err);
+    }
+
+    // bananaUses is controlled by server; no local boolean required
     window.location.href = 'banana-game.php?session_id=' + gameState.sessionId;
 }
+
+// On page load, check if we returned from the banana game successfully and resume
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        const success = sessionStorage.getItem('bananaGameSuccess');
+        if (!success) return;
+
+        // Clear the success flag so subsequent loads don't auto-resume
+        sessionStorage.removeItem('bananaGameSuccess');
+
+        const prevSessionId = sessionStorage.getItem('bananaPreviousSessionId');
+        const prevDifficulty = sessionStorage.getItem('bananaPreviousDifficulty');
+        const prevScore = parseInt(sessionStorage.getItem('bananaPrevScore') || '0', 10);
+        const prevQuestionsAnswered = parseInt(sessionStorage.getItem('bananaPrevQuestionsAnswered') || '0', 10);
+
+        // Remove persisted previous state after reading
+        sessionStorage.removeItem('bananaPreviousSessionId');
+        sessionStorage.removeItem('bananaPreviousDifficulty');
+        sessionStorage.removeItem('bananaPrevScore');
+        sessionStorage.removeItem('bananaPrevQuestionsAnswered');
+
+        if (!prevSessionId || !prevDifficulty) {
+            console.warn('Banana game returned but previous session info missing.');
+            return;
+        }
+
+        // Restore minimal game state
+        gameState.sessionId = prevSessionId;
+        gameState.difficulty = prevDifficulty;
+        gameState.currentScore = isNaN(prevScore) ? 0 : prevScore;
+        gameState.questionsAnswered = isNaN(prevQuestionsAnswered) ? 0 : prevQuestionsAnswered;
+
+        // Update UI to show the game screen and scores
+        const difficultyScreen = document.getElementById('difficultyScreen');
+        const gameScreen = document.getElementById('gameScreen');
+        if (difficultyScreen && gameScreen) {
+            difficultyScreen.classList.add('hidden');
+            gameScreen.classList.remove('hidden');
+        }
+
+        updateScore();
+
+        // Fetch lifelines from server. If the banana game awarded a skip, consume it
+        // immediately so banana acts as a skip and the player continues the quiz.
+        await fetchLifelines();
+        if (gameState.lifelines.skip > 0) {
+            // consume the awarded skip and load the next question
+            await useLifeline('skip');
+        } else {
+            // fallback: just load the next question
+            loadQuestion();
+        }
+    } catch (err) {
+        console.error('Error while resuming after banana game:', err);
+    }
+});
 
 // Restore lifeline after banana game success
 function restoreLifeline() {
