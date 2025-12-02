@@ -10,6 +10,9 @@ CREATE TABLE users (
     email VARCHAR(191) UNIQUE NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
     total_score INT DEFAULT 0,
+    two_fa_enabled BOOLEAN DEFAULT 0,
+    two_fa_secret VARCHAR(32) NULL,
+    two_fa_backup_codes JSON NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

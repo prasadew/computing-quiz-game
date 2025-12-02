@@ -2,8 +2,10 @@
 // login.php - User Login
 session_start();
 require_once 'includes/auth.php';
+require_once 'config/database.php';
 
 $auth = new Auth();
+$database = new Database();
 $error = '';
 $success = '';
 
@@ -21,13 +23,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $result = $auth->login($email, $password);
     
     if ($result['success']) {
-        // Set auth token in cookie
-        setcookie('auth_token', $result['token'], time() + 86400, '/', '', false, true);
-        $_SESSION['user_id'] = $result['user']['id'];
-        $_SESSION['user_name'] = $result['user']['name'];
+        // Check if user has 2FA enabled
+        $query = "SELECT two_fa_enabled FROM users WHERE email = ?";
+        $stmt = $database->executeQuery($query, [$email]);
+        $user = $database->fetchOne($stmt);
         
-        header('Location: game.php');
-        exit();
+        if ($user && $user['two_fa_enabled']) {
+            // Store user ID for 2FA verification and redirect to verification page
+            $_SESSION['2fa_pending_user_id'] = $result['user']['id'];
+            header('Location: verify-2fa.php');
+            exit();
+        } else {
+            // 2FA not enabled, proceed with normal login
+            setcookie('auth_token', $result['token'], time() + 86400, '/', '', false, true);
+            $_SESSION['user_id'] = $result['user']['id'];
+            $_SESSION['user_name'] = $result['user']['name'];
+            
+            header('Location: game.php');
+            exit();
+        }
     } else {
         $error = $result['message'];
     }

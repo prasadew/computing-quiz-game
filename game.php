@@ -28,6 +28,12 @@ $user = $auth->getCurrentUser();
                 <a href="leaderboard.php" class="btn btn-secondary" style="text-decoration: none; display: inline-block; margin-right: 10px;">
                     🏆 Leaderboard
                 </a>
+                <a href="setup-guide.php" class="btn btn-secondary" style="text-decoration: none; display: inline-block; margin-right: 10px;">
+                    🔐 Setup 2FA
+                </a>
+                <a href="settings.php" class="btn btn-secondary" style="text-decoration: none; display: inline-block; margin-right: 10px;">
+                    ⚙️ Settings
+                </a>
                 <a href="logout.php" class="btn btn-warning" style="text-decoration: none; display: inline-block;">
                     🚪 Logout
                 </a>
