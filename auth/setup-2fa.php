@@ -1,9 +1,9 @@
 <?php
 // setup-2fa.php - Setup Two-Factor Authentication
 session_start();
-require_once 'includes/auth.php';
-require_once 'includes/two-factor-auth.php';
-require_once 'config/database.php';
+require_once '../includes/auth.php';
+require_once '../includes/two-factor-auth.php';
+require_once '../config/database.php';
 
 $auth = new Auth();
 $database = new Database();
@@ -91,7 +91,7 @@ if ($step === 'show' && isset($_SESSION['2fa_setup_secret'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Setup Two-Factor Authentication - Computing Quiz Game</title>
-    <link rel="stylesheet" href="assets/css/dark-theme.css">
+    <link rel="stylesheet" href="../assets/css/dark-theme.css">
     <style>
         .qr-container {
             text-align: center;
@@ -339,14 +339,14 @@ if ($step === 'show' && isset($_SESSION['2fa_setup_secret'])) {
                         </div>
                     <?php endif; ?>
 
-                    <a href="game.php" class="btn btn-primary" style="text-decoration: none; display: inline-block; margin-top: 30px;">
+                    <a href="../pages/game.php" class="btn btn-primary" style="text-decoration: none; display: inline-block; margin-top: 30px;">
                         🎮 Return to Game
                     </a>
                 </div>
             <?php endif; ?>
 
             <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 2px solid var(--accent-purple);">
-                <a href="game.php" style="color: var(--glow-color); text-decoration: none;">
+                <a href="../pages/game.php" style="color: var(--glow-color); text-decoration: none;">
                     ⬅️ Back to Game
                 </a>
             </div>

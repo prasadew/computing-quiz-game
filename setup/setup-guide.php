@@ -1,7 +1,7 @@
 <?php
 // setup-guide.php - 2FA Setup Guide
 session_start();
-require_once 'includes/auth.php';
+require_once '../includes/auth.php';
 
 $auth = new Auth();
 
@@ -10,7 +10,7 @@ $auth->requireAuth();
 
 $user = $auth->getCurrentUser();
 if (!$user) {
-    header('Location: login.php');
+    header('Location: ../auth/login.php');
     exit();
 }
 ?>
@@ -20,7 +20,7 @@ if (!$user) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>2FA Setup Guide - Computing Quiz Game</title>
-    <link rel="stylesheet" href="assets/css/dark-theme.css">
+    <link rel="stylesheet" href="../assets/css/dark-theme.css">
     <style>
         .step-card {
             background: var(--bg-secondary);
@@ -228,10 +228,10 @@ if (!$user) {
             </div>
 
             <div style="text-align: center; margin-top: 30px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
-                <a href="settings.php" class="btn btn-primary" style="text-decoration: none;">
+                <a href="../pages/settings.php" class="btn btn-primary" style="text-decoration: none;">
                     ⚙️ Go to Settings & Enable 2FA
                 </a>
-                <a href="game.php" class="btn btn-secondary" style="text-decoration: none;">
+                <a href="../pages/game.php" class="btn btn-secondary" style="text-decoration: none;">
                     🎮 Back to Game
                 </a>
             </div>

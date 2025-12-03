@@ -3,8 +3,8 @@
 session_start();
 
 // Include required files
-require_once 'config/database.php';
-require_once 'includes/auth.php';
+require_once '../config/database.php';
+require_once '../includes/auth.php';
 
 // Create Auth instance
 $auth = new Auth();
@@ -21,6 +21,6 @@ if (isset($_COOKIE[session_name()])) {
 }
 
 // Redirect to index page
-header('Location: index.php');
+header('Location: ../index.php');
 exit();
 ?>

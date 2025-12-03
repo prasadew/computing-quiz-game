@@ -1,8 +1,8 @@
 <?php
 // debug-2fa.php - Debug 2FA Status
 session_start();
-require_once 'includes/auth.php';
-require_once 'config/database.php';
+require_once '../includes/auth.php';
+require_once '../config/database.php';
 
 $auth = new Auth();
 $database = new Database();
@@ -28,7 +28,7 @@ $userData = $database->fetchOne($stmt);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>2FA Debug - Computing Quiz Game</title>
-    <link rel="stylesheet" href="assets/css/dark-theme.css">
+    <link rel="stylesheet" href="../assets/css/dark-theme.css">
     <style>
         .debug-box {
             background: var(--bg-secondary);
@@ -109,7 +109,7 @@ $userData = $database->fetchOne($stmt);
                         To enable 2FA and have it prompt during login:
                     </p>
                     <ol style="color: var(--text-secondary);">
-                        <li>Go to <a href="settings.php" style="color: #4fc3f7;">Settings</a></li>
+                        <li>Go to <a href="../pages/settings.php" style="color: #4fc3f7;">Settings</a></li>
                         <li>Click "Enable 2FA" button</li>
                         <li>Follow the setup wizard to scan the QR code</li>
                         <li>Save your backup codes in a safe place</li>
@@ -123,16 +123,16 @@ $userData = $database->fetchOne($stmt);
                         Next time you login, you'll be prompted to enter your 2FA code after entering your password.
                     </p>
                     <p style="color: var(--text-secondary); margin-top: 15px;">
-                        <a href="settings.php" style="color: #4fc3f7;">Go to Settings</a> to regenerate backup codes or manage your 2FA settings.
+                        <a href="../pages/settings.php" style="color: #4fc3f7;">Go to Settings</a> to regenerate backup codes or manage your 2FA settings.
                     </p>
                 <?php endif; ?>
             </div>
 
             <div style="text-align: center; margin-top: 30px;">
-                <a href="settings.php" class="btn btn-primary" style="text-decoration: none; display: inline-block;">
+                <a href="../pages/settings.php" class="btn btn-primary" style="text-decoration: none; display: inline-block;">
                     ⚙️ Go to Settings
                 </a>
-                <a href="game.php" class="btn btn-secondary" style="text-decoration: none; display: inline-block; margin-left: 10px;">
+                <a href="../pages/game.php" class="btn btn-secondary" style="text-decoration: none; display: inline-block; margin-left: 10px;">
                     🎮 Back to Game
                 </a>
             </div>

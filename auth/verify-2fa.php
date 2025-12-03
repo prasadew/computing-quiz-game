@@ -1,8 +1,8 @@
 <?php
 // verify-2fa.php - 2FA Code Verification Page
 session_start();
-require_once 'includes/two-factor-auth.php';
-require_once 'config/database.php';
+require_once '../includes/two-factor-auth.php';
+require_once '../config/database.php';
 
 $database = new Database();
 $twoFA = new TwoFactorAuth();
@@ -45,7 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['user_name'] = $user['name'];
 
             // Create auth token
-            require_once 'includes/jwt.php';
+            require_once '../includes/jwt.php';
             $token = JWT::generate($user['id'], $user['email']);
             setcookie('auth_token', $token, time() + 86400, '/', '', false, true);
 
@@ -53,7 +53,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             error_log("User {$user['id']} used a backup code for 2FA verification");
 
             $success = 'Authentication successful! Redirecting...';
-            header('Refresh: 2; URL=game.php');
+            header('Refresh: 2; URL=../pages/game.php');
         } else {
             $error = 'Invalid backup code';
         }
@@ -66,11 +66,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['user_name'] = $user['name'];
 
             // Create auth token
-            require_once 'includes/jwt.php';
+            require_once '../includes/jwt.php';
             $token = JWT::generate($user['id'], $user['email']);
             setcookie('auth_token', $token, time() + 86400, '/', '', false, true);
 
-            header('Location: game.php');
+            header('Location: ../pages/game.php');
             exit();
         } else {
             $error = 'Invalid authentication code. Please try again.';
@@ -84,7 +84,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Two-Factor Authentication - Computing Quiz Game</title>
-    <link rel="stylesheet" href="assets/css/dark-theme.css">
+    <link rel="stylesheet" href="../assets/css/dark-theme.css">
     <style>
         .tabs {
             display: flex;

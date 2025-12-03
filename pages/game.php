@@ -1,7 +1,7 @@
 <?php
 // game.php - Main Game Interface
 session_start();
-require_once 'includes/auth.php';
+require_once '../includes/auth.php';
 
 $auth = new Auth();
 $auth->requireAuth();
@@ -14,7 +14,7 @@ $user = $auth->getCurrentUser();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Play Quiz - Computing Quiz Game</title>
-    <link rel="stylesheet" href="assets/css/dark-theme.css">
+    <link rel="stylesheet" href="../assets/css/dark-theme.css">
 </head>
 <body>
     <div class="container">
@@ -25,16 +25,16 @@ $user = $auth->getCurrentUser();
                 Total Score: <span id="totalScore"><?php echo $user['total_score']; ?></span>
             </p>
             <div style="position: relative; z-index: 1; margin-top: 15px;">
-                <a href="leaderboard.php" class="btn btn-secondary" style="text-decoration: none; display: inline-block; margin-right: 10px;">
+                <a href="../pages/leaderboard.php" class="btn btn-secondary" style="text-decoration: none; display: inline-block; margin-right: 10px;">
                     🏆 Leaderboard
                 </a>
-                <a href="setup-guide.php" class="btn btn-secondary" style="text-decoration: none; display: inline-block; margin-right: 10px;">
+                <a href="../setup/setup-guide.php" class="btn btn-secondary" style="text-decoration: none; display: inline-block; margin-right: 10px;">
                     🔐 Setup 2FA
                 </a>
-                <a href="settings.php" class="btn btn-secondary" style="text-decoration: none; display: inline-block; margin-right: 10px;">
+                <a href="../pages/settings.php" class="btn btn-secondary" style="text-decoration: none; display: inline-block; margin-right: 10px;">
                     ⚙️ Settings
                 </a>
-                <a href="logout.php" class="btn btn-warning" style="text-decoration: none; display: inline-block;">
+                <a href="../auth/logout.php" class="btn btn-warning" style="text-decoration: none; display: inline-block;">
                     🚪 Logout
                 </a>
             </div>
@@ -142,7 +142,7 @@ $user = $auth->getCurrentUser();
                     <button class="btn btn-primary" onclick="location.reload()">
                         🔄 Play Again
                     </button>
-                    <button class="btn btn-secondary" onclick="window.location.href='leaderboard.php'">
+                    <button class="btn btn-secondary" onclick="window.location.href='../pages/leaderboard.php'">
                         🏆 View Leaderboard
                     </button>
                 </div>
@@ -152,18 +152,18 @@ $user = $auth->getCurrentUser();
 
     <!-- Audio Elements -->
     <audio id="correctSound" preload="auto">
-        <source src="assets/sounds/correct.mp3" type="audio/mpeg">
+        <source src="../assets/sounds/correct.mp3" type="audio/mpeg">
     </audio>
     <audio id="wrongSound" preload="auto">
-        <source src="assets/sounds/wrong.mp3" type="audio/mpeg">
+        <source src="../assets/sounds/wrong.mp3" type="audio/mpeg">
     </audio>
     <audio id="tickSound" preload="auto">
-        <source src="assets/sounds/tick.mp3" type="audio/mpeg">
+        <source src="../assets/sounds/tick.mp3" type="audio/mpeg">
     </audio>
     <audio id="gameOverSound" preload="auto">
-        <source src="assets/sounds/gameover.mp3" type="audio/mpeg">
+        <source src="../assets/sounds/gameover.mp3" type="audio/mpeg">
     </audio>
 
-    <script src="assets/js/game.js"></script>
+    <script src="../assets/js/game.js"></script>
 </body>
 </html>

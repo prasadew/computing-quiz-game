@@ -1,7 +1,7 @@
 <?php
 // banana-game.php - Banana Pattern Game
 session_start();
-require_once 'includes/auth.php';
+require_once '../includes/auth.php';
 
 $auth = new Auth();
 $auth->requireAuth();
@@ -13,7 +13,7 @@ if (empty($session_id)) {
     exit();
 }
 
-require_once 'includes/banana-game-access.php';
+require_once '../includes/banana-game-access.php';
 if (!canAccessBananaGame($session_id)) {
     // User has completed all questions, redirect or show message
     header('Location: game.php?msg=banana_unavailable');
@@ -26,7 +26,7 @@ if (!canAccessBananaGame($session_id)) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Banana Game - Computing Quiz Game</title>
-    <link rel="stylesheet" href="assets/css/dark-theme.css">
+    <link rel="stylesheet" href="../assets/css/dark-theme.css">
     <style>
         .banana-game-container {
             text-align: center;
@@ -112,7 +112,7 @@ if (!canAccessBananaGame($session_id)) {
                 resultDiv.innerHTML = '✅ Correct! Restoring a lifeline...';
                 // Call API to restore lifeline
                 try {
-                    const response = await fetch('api/award_lifeline.php', {
+                    const response = await fetch('/computing-quiz-game/api/award_lifeline.php', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
