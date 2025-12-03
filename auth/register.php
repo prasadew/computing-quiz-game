@@ -1,7 +1,7 @@
 <?php
 // register.php - User Registration
 session_start();
-require_once 'includes/auth.php';
+require_once '../includes/auth.php';
 
 $auth = new Auth();
 $error = '';
@@ -9,7 +9,7 @@ $success = '';
 
 // Redirect if already logged in
 if ($auth->isAuthenticated()) {
-    header('Location: game.php');
+    header('Location: ../pages/game.php');
     exit();
 }
 
@@ -34,7 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['user_id'] = $result['user']['id'];
             $_SESSION['user_name'] = $result['user']['name'];
             
-            header('Location: game.php');
+            header('Location: ../pages/game.php');
             exit();
         } else {
             $error = $result['message'];
@@ -48,7 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register - Computing Quiz Game</title>
-    <link rel="stylesheet" href="assets/css/dark-theme.css">
+    <link rel="stylesheet" href="../assets/css/dark-theme.css">
 </head>
 <body>
     <div class="container">
@@ -138,7 +138,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
 
             <div style="text-align: center; margin-top: 20px;">
-                <a href="index.php" style="color: var(--glow-color); text-decoration: none; font-size: 1.1em;">
+                <a href="../index.php" style="color: var(--glow-color); text-decoration: none; font-size: 1.1em;">
                     ⬅️ Back to Home
                 </a>
             </div>

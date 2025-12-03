@@ -1,9 +1,9 @@
 <?php
 // settings.php - User Settings and 2FA Management
 session_start();
-require_once 'includes/auth.php';
-require_once 'includes/two-factor-auth.php';
-require_once 'config/database.php';
+require_once '../includes/auth.php';
+require_once '../includes/two-factor-auth.php';
+require_once '../config/database.php';
 
 $auth = new Auth();
 $database = new Database();
@@ -14,7 +14,7 @@ $auth->requireAuth();
 
 $user = $auth->getCurrentUser();
 if (!$user) {
-    header('Location: login.php');
+    header('Location: ../auth/login.php');
     exit();
 }
 
@@ -97,7 +97,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Settings - Computing Quiz Game</title>
-    <link rel="stylesheet" href="assets/css/dark-theme.css">
+    <link rel="stylesheet" href="../assets/css/dark-theme.css">
     <style>
         .settings-container {
             max-width: 800px;
@@ -319,7 +319,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                                 🛠️ Manage
                             </button>
                         <?php else: ?>
-                            <a href="setup-2fa.php" class="btn btn-primary" style="text-decoration: none;">
+                            <a href="../auth/setup-2fa.php" class="btn btn-primary" style="text-decoration: none;">
                                 🔒 Enable 2FA
                             </a>
                         <?php endif; ?>
@@ -346,7 +346,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                 <a href="game.php" class="btn btn-primary" style="text-decoration: none;">
                     🎮 Back to Game
                 </a>
-                <a href="logout.php" class="btn btn-secondary" style="text-decoration: none; margin-left: 10px;">
+                <a href="../auth/logout.php" class="btn btn-secondary" style="text-decoration: none; margin-left: 10px;">
                     🚪 Logout
                 </a>
             </div>

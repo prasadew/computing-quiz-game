@@ -550,7 +550,7 @@ function playBananaGame() {
     }
 
     // bananaUses is controlled by server; no local boolean required
-    window.location.href = 'banana-game.php?session_id=' + gameState.sessionId;
+    window.location.href = '../pages/banana-game.php?session_id=' + gameState.sessionId;
 }
 
 // On page load, check if we returned from the banana game successfully and resume

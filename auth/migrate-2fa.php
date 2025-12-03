@@ -2,7 +2,7 @@
 // migrate-2fa.php - Add 2FA columns to users table
 // Run this script once to add the necessary columns for 2FA support
 
-require_once 'config/database.php';
+require_once '../config/database.php';
 
 $database = new Database();
 

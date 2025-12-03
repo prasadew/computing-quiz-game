@@ -1,8 +1,8 @@
 <?php
 // Leaderboard - load real data from the database
 session_start();
-require_once __DIR__ . '/config/database.php';
-require_once __DIR__ . '/includes/auth.php';
+require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../includes/auth.php';
 
 $auth = new Auth();
 $isAuthenticated = $auth->isAuthenticated();
@@ -53,7 +53,7 @@ if ($auth->isAuthenticated()) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Leaderboard - Computing Quiz Game</title>
-    <link rel="stylesheet" href="assets/css/dark-theme.css">
+    <link rel="stylesheet" href="../assets/css/dark-theme.css">
 </head>
 <body>
     <div class="container">
@@ -66,7 +66,7 @@ if ($auth->isAuthenticated()) {
 
         <div class="card fade-in">
             <div style="text-align: center; margin-bottom: 30px;">
-                <a href="<?php echo $isAuthenticated ? 'game.php' : 'index.php'; ?>" 
+                <a href="<?php echo $isAuthenticated ? 'game.php' : '../index.php'; ?>" 
                    class="btn btn-primary" 
                    style="text-decoration: none; display: inline-block;">
                     <?php echo $isAuthenticated ? '🎮 Back to Game' : '🏠 Back to Home'; ?>
@@ -79,7 +79,7 @@ if ($auth->isAuthenticated()) {
                     <h2 style="color: var(--text-secondary); font-size: 1.5em;">
                         No scores yet! Be the first to play!
                     </h2>
-                    <a href="register.php" class="btn btn-secondary" style="text-decoration: none; display: inline-block; margin-top: 30px;">
+                    <a href="../auth/register.php" class="btn btn-secondary" style="text-decoration: none; display: inline-block; margin-top: 30px;">
                         🚀 Register & Play
                     </a>
                 </div>

@@ -37,16 +37,16 @@
                 </div>
 
                 <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin-top: 40px;">
-                    <a href="login.php" class="btn btn-primary" style="text-decoration: none; display: inline-block;">
+                    <a href="auth/login.php" class="btn btn-primary" style="text-decoration: none; display: inline-block;">
                         🎮 Login to Play
                     </a>
-                    <a href="register.php" class="btn btn-secondary" style="text-decoration: none; display: inline-block;">
+                    <a href="auth/register.php" class="btn btn-secondary" style="text-decoration: none; display: inline-block;">
                         📝 Register Now
                     </a>
                 </div>
 
                 <div style="margin-top: 30px;">
-                    <a href="leaderboard.php" style="color: var(--glow-color); text-decoration: none; font-size: 1.2em;">
+                    <a href="pages/leaderboard.php" style="color: var(--glow-color); text-decoration: none; font-size: 1.2em;">
                         🏆 View Leaderboard
                     </a>
                 </div>

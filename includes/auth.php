@@ -165,7 +165,7 @@ class Auth {
     // Require authentication (redirect if not authenticated)
     public function requireAuth() {
         if (!$this->isAuthenticated()) {
-            header('Location: login.php');
+            header('Location: ../auth/login.php');
             exit();
         }
     }
