@@ -6,9 +6,17 @@ require_once 'includes/auth.php';
 $auth = new Auth();
 $auth->requireAuth();
 
+
 $session_id = $_GET['session_id'] ?? '';
 if (empty($session_id)) {
     header('Location: game.php');
+    exit();
+}
+
+require_once 'includes/banana-game-access.php';
+if (!canAccessBananaGame($session_id)) {
+    // User has completed all questions, redirect or show message
+    header('Location: game.php?msg=banana_unavailable');
     exit();
 }
 ?>
