@@ -112,7 +112,7 @@ if (!canAccessBananaGame($session_id)) {
                 resultDiv.innerHTML = '✅ Correct! Restoring a lifeline...';
                 // Call API to restore lifeline
                 try {
-                    const response = await fetch('api/award_lifeline.php', {
+                    const response = await fetch('/computing-quiz-game/api/award_lifeline.php', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'

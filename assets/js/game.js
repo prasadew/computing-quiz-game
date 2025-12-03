@@ -26,7 +26,7 @@ gameState.pendingSave = false;
 // Fetch current lifeline status from server
 async function fetchLifelines() {
     try {
-        const response = await fetch(`api/get_lifelines.php?session_id=${gameState.sessionId}`, {
+        const response = await fetch(`/computing-quiz-game/api/get_lifelines.php?session_id=${gameState.sessionId}`, {
             credentials: 'same-origin'
         });
         const data = await response.json();
@@ -110,7 +110,7 @@ function generateSessionId() {
 // Initialize game session on server
 async function initializeSession() {
     try {
-        const response = await fetch('api/init_session.php', {
+        const response = await fetch('/computing-quiz-game/api/init_session.php', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -149,8 +149,8 @@ async function loadQuestion() {
         // Alternate between local DB and API
         const useApi = (gameState.questionsAnswered % 2 === 1); // alternate every other question
         const endpoint = useApi
-            ? `api/fetch_api_questions.php?difficulty=${gameState.difficulty}`
-            : `api/get_question.php?difficulty=${gameState.difficulty}&session_id=${gameState.sessionId}`;
+            ? `/computing-quiz-game/api/fetch_api_questions.php?difficulty=${gameState.difficulty}`
+            : `/computing-quiz-game/api/get_question.php?difficulty=${gameState.difficulty}&session_id=${gameState.sessionId}`;
 
         const response = await fetch(endpoint, {
             credentials: 'same-origin'
@@ -300,7 +300,7 @@ async function selectAnswer(selectedOption) {
             payload.correct_option = gameState.currentQuestion.correct_option;
             payload.difficulty = gameState.currentQuestion.difficulty || gameState.difficulty;
         }
-        const response = await fetch('api/submit_answer.php', {
+        const response = await fetch('/computing-quiz-game/api/submit_answer.php', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -422,7 +422,7 @@ function fiftyFiftyLifeline() {
 // Update lifeline count on server
 async function updateLifelineOnServer(type) {
     try {
-        await fetch('api/use_lifeline.php', {
+        await fetch('/computing-quiz-game/api/use_lifeline.php', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -513,7 +513,7 @@ async function endGame(reason) {
 // Save final score to database
 async function saveFinalScore() {
     try {
-        const response = await fetch('api/save_score.php', {
+        const response = await fetch('/computing-quiz-game/api/save_score.php', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

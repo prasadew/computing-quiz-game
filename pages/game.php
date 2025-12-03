@@ -152,16 +152,16 @@ $user = $auth->getCurrentUser();
 
     <!-- Audio Elements -->
     <audio id="correctSound" preload="auto">
-        <source src="assets/sounds/correct.mp3" type="audio/mpeg">
+        <source src="../assets/sounds/correct.mp3" type="audio/mpeg">
     </audio>
     <audio id="wrongSound" preload="auto">
-        <source src="assets/sounds/wrong.mp3" type="audio/mpeg">
+        <source src="../assets/sounds/wrong.mp3" type="audio/mpeg">
     </audio>
     <audio id="tickSound" preload="auto">
-        <source src="assets/sounds/tick.mp3" type="audio/mpeg">
+        <source src="../assets/sounds/tick.mp3" type="audio/mpeg">
     </audio>
     <audio id="gameOverSound" preload="auto">
-        <source src="assets/sounds/gameover.mp3" type="audio/mpeg">
+        <source src="../assets/sounds/gameover.mp3" type="audio/mpeg">
     </audio>
 
     <script src="../assets/js/game.js"></script>
