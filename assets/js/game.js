@@ -467,9 +467,9 @@ async function endGame(reason) {
     document.getElementById('finalScore').textContent = gameState.currentScore;
     document.getElementById('questionsAnswered').textContent = gameState.questionsAnswered;
 
-    // Show banana game option if banana has been used fewer than 2 times in this session
-    // (allow playing banana even if other lifelines remain)
-    if (gameState.bananaUses < 2) {
+    // Only show banana game option if NOT a congratulations ending
+    const isCongrats = document.getElementById('gameOverTitle').innerHTML.includes('Congratulations');
+    if (!isCongrats && gameState.bananaUses < 2) {
         document.getElementById('bananaGameOption').classList.remove('hidden');
     } else {
         document.getElementById('bananaGameOption').classList.add('hidden');
