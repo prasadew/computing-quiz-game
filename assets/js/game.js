@@ -146,11 +146,17 @@ async function loadQuestion() {
             sessionId: gameState.sessionId
         });
 
-        const response = await fetch(`api/get_question.php?difficulty=${gameState.difficulty}&session_id=${gameState.sessionId}`, {
+        // Alternate between local DB and API
+        const useApi = (gameState.questionsAnswered % 2 === 1); // alternate every other question
+        const endpoint = useApi
+            ? `api/fetch_api_questions.php?difficulty=${gameState.difficulty}`
+            : `api/get_question.php?difficulty=${gameState.difficulty}&session_id=${gameState.sessionId}`;
+
+        const response = await fetch(endpoint, {
             credentials: 'same-origin'
         });
         console.log('API Response status:', response.status);
-        
+
         const data = await response.json();
         console.log('Question API response:', data);
 
@@ -160,15 +166,39 @@ async function loadQuestion() {
             return;
         }
 
-        if (!data.question || !data.question.question_text) {
+        // Handle both local and API formats
+        let questionObj = {};
+        if (data.question.question_text) {
+            // Local DB format
+            questionObj = data.question;
+        } else if (data.question.question) {
+            // API format
+            // Map choices to option_a, option_b, ...
+            const shuffledChoices = [...data.question.choices];
+            // Shuffle choices for randomness
+            for (let i = shuffledChoices.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffledChoices[i], shuffledChoices[j]] = [shuffledChoices[j], shuffledChoices[i]];
+            }
+            questionObj = {
+                id: data.question.id,
+                question_text: data.question.question,
+                option_a: shuffledChoices[0],
+                option_b: shuffledChoices[1],
+                option_c: shuffledChoices[2],
+                option_d: shuffledChoices[3],
+                correct_answer: data.question.correct_answer,
+                correct_option: ['A','B','C','D'][shuffledChoices.indexOf(data.question.correct_answer)]
+            };
+        } else {
             console.error('Invalid question data received:', data);
             endGame('Error: Invalid question data');
             return;
         }
 
-        gameState.currentQuestion = data.question;
-        console.log('Displaying question:', data.question.question_text);
-        displayQuestion(data.question);
+        gameState.currentQuestion = questionObj;
+        console.log('Displaying question:', questionObj.question_text);
+        displayQuestion(questionObj);
         startTimer();
     } catch (error) {
         console.error('Error loading question:', error);
@@ -258,18 +288,25 @@ async function selectAnswer(selectedOption) {
     clearInterval(gameState.timerInterval);
 
     try {
+        // Prepare payload
+        const payload = {
+            session_id: gameState.sessionId,
+            question_id: gameState.currentQuestion.id,
+            selected_option: selectedOption,
+            time_taken: getTimeTaken()
+        };
+        // If API question, send correct_option and difficulty for backend validation
+        if (String(gameState.currentQuestion.id).startsWith('api_')) {
+            payload.correct_option = gameState.currentQuestion.correct_option;
+            payload.difficulty = gameState.currentQuestion.difficulty || gameState.difficulty;
+        }
         const response = await fetch('api/submit_answer.php', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
             credentials: 'same-origin',
-            body: JSON.stringify({
-                session_id: gameState.sessionId,
-                question_id: gameState.currentQuestion.id,
-                selected_option: selectedOption,
-                time_taken: getTimeTaken()
-            })
+            body: JSON.stringify(payload)
         });
 
         const data = await response.json();
