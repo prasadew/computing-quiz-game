@@ -16,7 +16,8 @@ let gameState = {
     },
     // track how many times banana has been used (server-side counter reflected here)
     bananaUses: 0,
-    isAnswering: false
+    isAnswering: false,
+    tickSoundPlaying: false
 };
 
 // When true, the final score has not yet been saved to the server and
@@ -252,17 +253,35 @@ function startTimer() {
     updateTimerDisplay();
 
     clearInterval(gameState.timerInterval);
+    gameState.tickSoundPlaying = false;
     gameState.timerInterval = setInterval(() => {
         gameState.timeRemaining--;
         updateTimerDisplay();
 
         // Play tick sound when time is low
         if (gameState.timeRemaining <= 5 && gameState.timeRemaining > 0) {
-            playSound('tick');
+            if (!gameState.tickSoundPlaying) {
+                playSound('tick');
+                gameState.tickSoundPlaying = true;
+            }
+        } else {
+            // Stop tick sound when time goes above 5 seconds or reaches 0
+            gameState.tickSoundPlaying = false;
+            const tickSound = document.getElementById('tickSound');
+            if (tickSound) {
+                tickSound.pause();
+                tickSound.currentTime = 0;
+            }
         }
 
         if (gameState.timeRemaining <= 0) {
             clearInterval(gameState.timerInterval);
+            gameState.tickSoundPlaying = false;
+            const tickSound = document.getElementById('tickSound');
+            if (tickSound) {
+                tickSound.pause();
+                tickSound.currentTime = 0;
+            }
             timeUp();
         }
     }, 1000);
